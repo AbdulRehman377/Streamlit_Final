@@ -1,0 +1,66 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+env/
+*.env
+
+# VSCode settings (if using VSCode)
+.vscode/
+
+# IDE-specific files (for example, for PyCharm, IntelliJ)
+.idea/
+
+# Mac system files
+.DS_Store
+
+# Windows system files
+Thumbs.db
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Log files
+*.log
+
+# Temporary files
+*.swp
+
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual env
+.env
+venv/
+new_env/
+*.sqlite
+*.db
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Chroma DB directories
+chroma_db/
+chroma_db_enhanced/
+
+# Logs & cache
+*.log
+
+# Output JSONs — optional if large/generated
+RAW_OCR.json
+ENHANCED_CHUNKS.json
+VECTORDB_READY.json
+
+# PDFs (large binary test files)
+*.pdf
+*.PDF
+
+# System files
+.DS_Store
+Thumbs.db
