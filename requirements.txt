@@ -1,38 +1,15 @@
-# Core LangChain + LangGraph
-langchain
-langchain-core
-langchain-community
+# Streamlit Frontend
+streamlit
+
+# Azure OpenAI & LangChain
 langchain-openai
-langgraph
 openai
 
-# Vector Store
+# Vector Store (for future RAG chat feature)
 chromadb
 langchain-chroma
 rank-bm25
 
-# API
-fastapi
-uvicorn
-
-# File Processing
-watchdog
-PyPDF2
-pandas
-openpyxl
-beautifulsoup4
-
-# Utils
+# Environment & Utils
 python-dotenv
-tiktoken
-pydantic
-
-# Azure and Mistral
-azure-ai-documentanalysis
-azure-core
-mistralai
 requests
-
-# Image Processing and PDF Handling
-pdf2image
-Pillow

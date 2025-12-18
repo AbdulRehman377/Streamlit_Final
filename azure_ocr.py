@@ -1,5 +1,5 @@
 """
-Azure Document Intelligence OCR
+Azure Document Intelligence OCR Module
 
 Sends PDF to Azure DI Layout Model and returns structured JSON.
 Features:
@@ -9,45 +9,43 @@ Features:
 """
 
 import os
-import json
 import time
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# CONFIGURATION
-# ═══════════════════════════════════════════════════════════════════════════════
+# Azure DI Configuration
 ENDPOINT = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_ENDPOINT", "").rstrip("/")
 KEY = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
-API_VERSION = "2024-11-30"  # Updated to match production TS code
+API_VERSION = "2024-11-30"
 MODEL_ID = "prebuilt-layout"
 
-PDF_PATH = "invoice2.PDF"        # Input PDF file
-OUTPUT_JSON = "RAW_OCR.json"    # Output JSON file
-
 # Polling settings
-MAX_POLL_ATTEMPTS = 60          # Maximum polling attempts
-INITIAL_WAIT_MS = 2000          # Initial wait time (2 seconds)
-MAX_WAIT_MS = 10000             # Maximum wait time (10 seconds)
-BACKOFF_MULTIPLIER = 1.2        # Exponential backoff multiplier
+MAX_POLL_ATTEMPTS = 60
+INITIAL_WAIT_MS = 2000
+MAX_WAIT_MS = 10000
+BACKOFF_MULTIPLIER = 1.2
 
 
 def analyze_layout_rest(file_path: str, max_attempts: int = MAX_POLL_ATTEMPTS) -> dict:
     """
     Send file to Azure Layout model & return RAW JSON response.
     
-    Features robust polling with:
-    - Exponential backoff
-    - 429/503 throttling handling
-    - 404 "not ready" handling
-    - Timeout after max attempts
+    Args:
+        file_path: Path to the PDF file
+        max_attempts: Maximum polling attempts before timeout
+        
+    Returns:
+        dict: Raw Azure DI response with analyzeResult
+        
+    Raises:
+        RuntimeError: If credentials missing or analysis fails
     """
     if not ENDPOINT or not KEY:
         raise RuntimeError("Missing Azure credentials. Check .env file.")
 
-    # === STEP 1: Submit analysis request ===
+    # Submit analysis request
     analyze_url = (
         f"{ENDPOINT}/documentintelligence/documentModels/"
         f"{MODEL_ID}:analyze?api-version={API_VERSION}&outputContentFormat=markdown"
@@ -80,33 +78,31 @@ def analyze_layout_rest(file_path: str, max_attempts: int = MAX_POLL_ATTEMPTS) -
     if not operation_url:
         raise RuntimeError("No operation-location header in response")
     
-    # Extract operation ID for logging
     operation_id = operation_url.split('/')[-1].split('?')[0]
     print(f"✅ Analysis submitted. Operation ID: {operation_id}")
 
-    # === STEP 2: Poll for results with robust handling ===
+    # Poll for results with robust handling
     print("\n⏳ Polling for results...")
     
     poll_headers = {"Ocp-Apim-Subscription-Key": KEY}
-    
-    # Use while loop so 429/503/404 retries don't count toward max_attempts
     attempt = 0
+    
     while attempt < max_attempts:
         try:
             poll = requests.get(operation_url, headers=poll_headers)
             
-            # Handle throttling (429) or service unavailable (503) - DON'T count as attempt
+            # Handle throttling - don't count as attempt
             if poll.status_code in [429, 503]:
                 retry_after = int(poll.headers.get('retry-after', 3)) * 1000
-                print(f"   ⚠️  Rate limited ({poll.status_code}), waiting {retry_after}ms... (not counted)")
+                print(f"   ⚠️  Rate limited ({poll.status_code}), waiting {retry_after}ms...")
                 time.sleep(retry_after / 1000)
-                continue  # Don't increment attempt
+                continue
             
-            # Handle "not ready yet" (404) - DON'T count as attempt
+            # Handle not ready - don't count as attempt
             if poll.status_code == 404:
-                print(f"   ⏳ Operation not ready yet, waiting... (not counted)")
+                print(f"   ⏳ Operation not ready yet, waiting...")
                 time.sleep(INITIAL_WAIT_MS / 1000)
-                continue  # Don't increment attempt
+                continue
             
             poll.raise_for_status()
             result = poll.json()
@@ -115,7 +111,6 @@ def analyze_layout_rest(file_path: str, max_attempts: int = MAX_POLL_ATTEMPTS) -
             if status == "succeeded":
                 print(f"\n✅ Layout extraction complete! (attempt {attempt + 1})")
                 
-                # Log analysis summary
                 analysis = result.get("analyzeResult", {})
                 print(f"   Content length: {len(analysis.get('content', '')):,} chars")
                 print(f"   Pages: {len(analysis.get('pages', []))}")
@@ -128,29 +123,16 @@ def analyze_layout_rest(file_path: str, max_attempts: int = MAX_POLL_ATTEMPTS) -
                 error_msg = result.get("error", {}).get("message", "Unknown error")
                 raise RuntimeError(f"❌ Document analysis failed: {error_msg}")
             
-            # Still running - wait with exponential backoff, INCREMENT attempt
+            # Still running - wait with exponential backoff
             wait_time = min(INITIAL_WAIT_MS * (BACKOFF_MULTIPLIER ** attempt), MAX_WAIT_MS)
             print(f"   Attempt {attempt + 1}/{max_attempts}: Status = {status}, waiting {int(wait_time)}ms...")
             time.sleep(wait_time / 1000)
-            attempt += 1  # Only increment for actual polling attempts
+            attempt += 1
             
         except requests.exceptions.RequestException as e:
             print(f"   ⚠️  Poll attempt {attempt + 1} error: {e}")
-            attempt += 1  # Count errors as attempts
+            attempt += 1
             if attempt < max_attempts:
-                time.sleep(3)  # Wait before retry on error
+                time.sleep(3)
     
     raise RuntimeError(f"❌ Polling timeout after {max_attempts} attempts")
-
-
-if __name__ == "__main__":
-    result = analyze_layout_rest(PDF_PATH)
-
-    # Save for downstream processing
-    with open(OUTPUT_JSON, "w", encoding="utf-8") as f:
-        json.dump(result, f, indent=4, ensure_ascii=False)
-    
-    print(f"\n💾 Saved to {OUTPUT_JSON}")
-    print(f"\n{'='*60}")
-    print("✅ OCR complete! Run 'python enhanced_chunker.py' next.")
-    print(f"{'='*60}\n")
