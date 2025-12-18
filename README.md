@@ -303,8 +303,3 @@ The OCR module implements robust polling:
 4. Submit a pull request
 
 ---
-
-## 📄 License
-
-[Add your license here]
-
