@@ -8,7 +8,6 @@ with Azure OpenAI embeddings + BM25 for hybrid search.
 import os
 import json
 import re
-from collections import defaultdict
 from dotenv import load_dotenv
 from langchain_openai import AzureOpenAIEmbeddings
 from langchain_chroma import Chroma
@@ -310,7 +309,7 @@ def interactive_mode():
     
     print(f"\n{'='*60}")
     print("🎯 INTERACTIVE HYBRID SEARCH MODE")
-    print("='*60")
+    print(f"{'='*60}")
     print("Commands:")
     print("  q       - Quit")
     print("  k=N     - Set number of results (e.g., k=5)")
@@ -368,7 +367,6 @@ def interactive_mode():
 
 if __name__ == "__main__":
     import sys
-    
     if len(sys.argv) > 1 and sys.argv[1] == "--interactive":
         interactive_mode()
     else:

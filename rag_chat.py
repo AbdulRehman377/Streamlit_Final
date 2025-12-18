@@ -7,7 +7,6 @@ Beautiful terminal interface for querying documents using:
 """
 
 import os
-import sys
 import json
 import re
 from dotenv import load_dotenv
@@ -45,25 +44,13 @@ RETRIEVED_CHUNKS_PATH = "RETRIEVED_CHUNKS.json"  # Stores latest retrieved chunk
 # ═══════════════════════════════════════════════════════════════════════════════
 
 class Colors:
-    """ANSI color codes for beautiful terminal output."""
-    # Basic colors
+    """ANSI color codes for terminal output styling."""
     RESET = "\033[0m"
     BOLD = "\033[1m"
     DIM = "\033[2m"
-    ITALIC = "\033[3m"
-    UNDERLINE = "\033[4m"
-    
-    # Foreground colors
-    BLACK = "\033[30m"
-    RED = "\033[31m"
-    GREEN = "\033[32m"
-    YELLOW = "\033[33m"
-    BLUE = "\033[34m"
-    MAGENTA = "\033[35m"
-    CYAN = "\033[36m"
     WHITE = "\033[37m"
     
-    # Bright foreground
+    # Bright foreground colors
     BRIGHT_BLACK = "\033[90m"
     BRIGHT_RED = "\033[91m"
     BRIGHT_GREEN = "\033[92m"
@@ -72,12 +59,6 @@ class Colors:
     BRIGHT_MAGENTA = "\033[95m"
     BRIGHT_CYAN = "\033[96m"
     BRIGHT_WHITE = "\033[97m"
-    
-    # Background colors
-    BG_BLACK = "\033[40m"
-    BG_BLUE = "\033[44m"
-    BG_CYAN = "\033[46m"
-    BG_WHITE = "\033[47m"
 
 
 def print_banner():
@@ -275,7 +256,6 @@ class RAGChat:
         self.k = DEFAULT_K
         self.alpha = DEFAULT_ALPHA
         self.show_sources = True
-        self.conversation_history = []
     
     def initialize(self):
         """Initialize all components."""

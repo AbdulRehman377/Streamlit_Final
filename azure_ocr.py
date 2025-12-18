@@ -24,7 +24,7 @@ KEY = os.getenv("AZURE_DOCUMENT_INTELLIGENCE_KEY")
 API_VERSION = "2024-11-30"  # Updated to match production TS code
 MODEL_ID = "prebuilt-layout"
 
-PDF_PATH = "invoice.pdf"        # Input PDF file
+PDF_PATH = "invoice2.PDF"        # Input PDF file
 OUTPUT_JSON = "RAW_OCR.json"    # Output JSON file
 
 # Polling settings
